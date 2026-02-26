@@ -1,73 +1,36 @@
+import { PrismaClient } from '../src/generated/prisma/client.js';
+import { PrismaPg } from '@prisma/adapter-pg';
+import 'dotenv/config';
 
-import { prisma } from '../src/prisma.js'
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    await prisma.author.create({
-        data: {
-            email: 'author1@example.org',
-            name: 'author one'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author2@example.org',
-            name: 'author two'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author3@example.org',
-            name: 'author three'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author4@example.org',
-            name: 'author four'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author5@example.org',
-            name: 'author five'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author6@example.org',
-            name: 'author six'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author7@example.org',
-            name: 'author seven'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author8@example.org',
-            name: 'author seven'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author9@example.org',
-            name: 'author seven'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author10@example.org',
-            name: 'author seven'
-        }
-    })
-    await prisma.author.create({
-        data: {
-            email: 'author11@example.org',
-            name: 'author seven'
-        }
-    })
+    await prisma.news.deleteMany();
+    await prisma.author.deleteMany();
+
+    const authors = await prisma.$transaction([
+        prisma.author.create({ data: { name: 'author one', email: 'author1@example.org' } }),
+        prisma.author.create({ data: { name: 'author two', email: 'author2@example.org' } }),
+        prisma.author.create({ data: { name: 'author three', email: 'author3@example.com' } }),
+        prisma.author.create({ data: { name: 'author four', email: 'author4@example.com' } }),
+        prisma.author.create({ data: { name: 'author five', email: 'author5@example.com' } }),
+        prisma.author.create({ data: { name: 'author six', email: 'author6@example.com' } }),
+        prisma.author.create({ data: { name: 'author seven', email: 'author7@example.com' } }),
+        prisma.author.create({ data: { name: 'author eight', email: 'author8@example.com' } }),
+        prisma.author.create({ data: { name: 'author nine', email: 'author9@example.com' } }),
+    ]);
+
+    const newsItems = Array.from({ length: 12 }, (_, i) => ({
+        slug: `frett-${i + 1}`,
+        title: `Frétt númer ${i + 1}`,
+        excerpt: `Stuttur útdráttur fyrir frétt ${i + 1}.`,
+        content: `Lengra efni fyrir frétt ${i + 1}. Lorem ipsum ...`,
+        published: i % 2 === 0,
+        authorId: authors[i % authors.length]!.id,
+    }));
+
+  await prisma.news.createMany({ data: newsItems });
 }
 
 main()
