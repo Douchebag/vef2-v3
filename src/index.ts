@@ -1,11 +1,13 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import { prettyJSON } from 'hono/pretty-json'
 import { app as authorsApi} from './api/authors.api.js'
 import { app as newsApi} from './api/news.api.js'
 
 const app = new Hono()
 
+app.use(cors())
 app.use(prettyJSON()) // With options: prettyJSON({ space: 4 })
 
 app.get('/', (c) => c.json( {
